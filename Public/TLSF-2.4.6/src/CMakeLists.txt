@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.12)
+project(TLSF C)
+
+file(GLOB SOURCE *.c)
+foreach (item IN LISTS SOURCE)
+    message(STATUS "[${PROJECT_NAME}] SOURCE: ${item}")
+endforeach ()
+
+add_library(${PROJECT_NAME} ${SOURCE})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_C_COMPILER_ID MATCHES GNU)
+        message(STATUS "TLSF_USE_LOCKS FOR Windows/GNU")
+        target_compile_definitions(${PROJECT_NAME} PUBLIC TLSF_USE_LOCKS)
+    endif ()
+else ()
+    message(STATUS "TLSF_USE_LOCKS FOR None Windows")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TLSF_USE_LOCKS)
+endif ()

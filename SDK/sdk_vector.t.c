@@ -1,8 +1,11 @@
 #include <sdk_vector.h>
 #include <stdio.h>
+#include <sdk_memory.h>
 
 int main(int argc, char** argv)
 {
+    sdk_memory_init();
+    
     sdk_vector_t v1;
     sdk_vector_init(&v1, 0);
     
@@ -20,6 +23,8 @@ int main(int argc, char** argv)
         sdk_vector_resize_remove(&v1, 0);
         printf("Vector.Size=%d, Vector.Capacity=%d\r\n", v1.size, v1.capacity);
     }
+    
+    sdk_memory_destroy();
     
     return 0;
 }

@@ -16,6 +16,11 @@ void* sdk_memory_calloc(sdk_size_t nCount, sdk_size_t nBytes, const char* file, 
 void* sdk_memory_realloc(void* memory, sdk_size_t nBytes, const char* file, sdk_size_t line);
 void sdk_memory_free(void* memory, const char* file, sdk_size_t line);
 
+#ifdef USE_MEMORY_POOL
+void sdk_memory_init(void);
+void sdk_memory_destroy(void);
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
