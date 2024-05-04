@@ -18,6 +18,7 @@
 #define SDK_EEMPTY       (-4)
 #define SDK_ETIMEOUT     (-5)
 #define SDK_EINVAL       (-6)
+#define SDK_EOVERFLOW    (-7)
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
