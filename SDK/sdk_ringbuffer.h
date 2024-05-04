@@ -58,7 +58,7 @@ sdk_size_t sdk_ringbuffer_previous_read_idx(sdk_ringbuffer_t* buffer);
 unsigned long sdk_ringbuffer_strtoul(sdk_ringbuffer_t * buffer, sdk_size_t* end_idx, register int base);
 sdk_err_t sdk_ringbuffer_strchr(sdk_ringbuffer_t* buffer, int c, sdk_size_t* result);
 int sdk_ringbuffer_strncmp(sdk_ringbuffer_t * buffer, const char *s2, register sdk_size_t n);
-sdk_err_t sdk_ringbuffer_strstr(sdk_ringbuffer_t* buffer, const char* s2, sdk_size_t* result);
+sdk_err_t sdk_ringbuffer_strstr(sdk_ringbuffer_t* buffer, int idx, const char* s2, sdk_size_t* result);
 
 int sdk_ringbuffer_memcmp(sdk_ringbuffer_t* buffer, int idx, const uint8_t* s2, sdk_size_t count);
 

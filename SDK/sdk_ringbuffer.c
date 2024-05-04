@@ -272,11 +272,10 @@ int sdk_ringbuffer_strncmp(sdk_ringbuffer_t * buffer, const char *s2, register s
     return 0;
 }
 
-sdk_err_t sdk_ringbuffer_strstr(sdk_ringbuffer_t* buffer, const char* s2, sdk_size_t* result)
+sdk_err_t sdk_ringbuffer_strstr(sdk_ringbuffer_t* buffer, int idx, const char* s2, sdk_size_t* result)
 {
     sdk_size_t size2 = strlen(s2);
     uint8_t ch;
-    int idx = 0;
     int find_idx = 0;
     sdk_err_t err;
     sdk_size_t i;

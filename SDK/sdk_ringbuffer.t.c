@@ -40,9 +40,9 @@ int main(int argc, char** argv)
     int strncmp_result = sdk_ringbuffer_strncmp(&buffer, number, strlen(number));
     printf("strncmp result: %d\r\n", strncmp_result);
     
-    buffer.read_idx=0;
+    buffer.read_idx=48;
     number = "3456";
-    err = sdk_ringbuffer_strstr(&buffer, number, &find_idx);
+    err = sdk_ringbuffer_strstr(&buffer, 0, number, &find_idx);
     printf("strstr: err=%d, find_idx=%d\r\n", err, find_idx);
     
     int memcmp = sdk_ringbuffer_memcmp(&buffer, 51, (uint8_t*)number, strlen(number));
