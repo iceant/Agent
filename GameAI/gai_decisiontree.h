@@ -22,6 +22,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
+#define GAI_NODE_TYPE_DECISION_BRANCH       0x101
+#define GAI_NODE_TYPE_DECISION_TREE         0x102
 
 typedef struct gai_DecisionTreeBranch_s{
     gai_Node_t node;

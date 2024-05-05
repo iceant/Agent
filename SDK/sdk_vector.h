@@ -27,6 +27,7 @@ typedef struct sdk_vector_s{
 ////
 
 sdk_err_t sdk_vector_init(sdk_vector_t* vector, sdk_size_t capacity);
+void sdk_vector_destroy(sdk_vector_t * vector);
 sdk_err_t sdk_vector_append(sdk_vector_t* vector, void* item);
 sdk_err_t sdk_vector_resize_append(sdk_vector_t* vector, void* item);
 sdk_err_t sdk_vector_resize(sdk_vector_t* vector, sdk_size_t new_capacity);

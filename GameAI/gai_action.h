@@ -40,4 +40,6 @@ gai_ActionStatus gai_Action_Update(gai_Action_t* action, void* userdata);
 
 void gai_Action_Cleanup(gai_Action_t* action, void* userdata);
 
+gai_ActionStatus gai_Action_Status(gai_Action_t * action);
+
 #endif /* INCLUDED_GAI_ACTION_H */

@@ -18,8 +18,6 @@
 
 #define GAI_NODE_TYPE_ACTION                1
 #define GAI_NODE_TYPE_EVALUATOR             2
-#define GAI_NODE_TYPE_DECISION_BRANCH       3
-#define GAI_NODE_TYPE_DECISION_TREE         4
 
 ////////////////////////////////////////////////////////////////////////////////
 ////

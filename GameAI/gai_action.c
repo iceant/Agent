@@ -55,4 +55,9 @@ void gai_Action_Cleanup(gai_Action_t* action, void* userdata)
     action->status = kGAI_ActionStatus_UNINITIALIZED;
 }
 
+gai_ActionStatus gai_Action_Status(gai_Action_t * action)
+{
+    return action->status;
+}
+
 

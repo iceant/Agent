@@ -45,7 +45,8 @@ int gai_DecisionTree_Init(gai_DecisionTree_t* tree, const char* name, void* user
 }
 
 void gai_DecisionTree_DeInit(gai_DecisionTree_t * tree){
-
+    tree->branch = 0;
+    tree->currentAction = 0;
 }
 
 void gai_DecisionTree_SetBranch(gai_DecisionTree_t* tree, gai_DecisionTreeBranch_t* branch)

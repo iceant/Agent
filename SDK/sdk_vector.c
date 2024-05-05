@@ -24,6 +24,11 @@ sdk_err_t sdk_vector_init(sdk_vector_t* vector, sdk_size_t capacity)
     return SDK_EOK;
 }
 
+void sdk_vector_destroy(sdk_vector_t * vector){
+    SDK_FREE(vector->items);
+    vector->size = 0;
+}
+
 sdk_err_t sdk_vector_append(sdk_vector_t* vector, void* item)
 {
     if(vector->size>=vector->capacity){
