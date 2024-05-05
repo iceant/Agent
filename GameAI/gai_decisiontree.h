@@ -35,6 +35,7 @@ typedef struct gai_DecisionTree_s{
     gai_Node_t node;
     gai_DecisionTreeBranch_t* branch;
     gai_Action_t * currentAction;
+    sdk_vector_t branches;
 }gai_DecisionTree_t;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,5 +63,8 @@ void gai_DecisionTree_SetBranch(gai_DecisionTree_t* tree, gai_DecisionTreeBranch
 
 void gai_DecisionTree_Update(gai_DecisionTree_t* tree, void* userdata);
 
+gai_DecisionTreeBranch_t * gai_DecisionTree_FindBranch(gai_DecisionTree_t* tree, const char* branchName);
+
+int gai_DecisionTree_AddBranch(gai_DecisionTree_t* tree, gai_DecisionTreeBranch_t * branch);
 
 #endif /* INCLUDED_GAI_DECISIONTREE_H */

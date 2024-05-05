@@ -103,9 +103,13 @@ int main(int argc, char** argv) {
     gai_DecisionTreeBranch_AddChild(&isAliveBranch, (gai_Node_t *) &moveFleeBranch);
     gai_DecisionTreeBranch_AddChild(&isAliveBranch, (gai_Node_t *) &dieAction);
     
+    gai_DecisionTree_AddBranch(&tree, &isAliveBranch);
+    
     gai_DecisionTree_SetBranch(&tree, &isAliveBranch);
     
     gai_DecisionTree_Update(&tree, 0);
+    
+    gai_DecisionTree_DeInit(&tree);
     
     sdk_memory_destroy();
     return 0;

@@ -1,4 +1,5 @@
 #include <gai_decisiontree.h>
+#include <string.h>
 
 int gai_DecisionTreeBranch_Init(gai_DecisionTreeBranch_t* branch, const char* name
         , gai_Evaluator_t *evaluator, void* userdata)
@@ -44,13 +45,32 @@ int gai_DecisionTree_Init(gai_DecisionTree_t* tree, const char* name, void* user
     gai_Node_Init(&tree->node, name, GAI_NODE_TYPE_DECISION_TREE, userdata);
     tree->branch = 0;
     tree->currentAction = 0;
-    
+    sdk_vector_init(&tree->branches, 0);
     return 0;
 }
 
 void gai_DecisionTree_DeInit(gai_DecisionTree_t * tree){
+    sdk_vector_destroy(&tree->branches);
     tree->branch = 0;
     tree->currentAction = 0;
+}
+
+int gai_DecisionTree_AddBranch(gai_DecisionTree_t* tree, gai_DecisionTreeBranch_t * branch)
+{
+    sdk_vector_append(&tree->branches, branch);
+    return 0;
+}
+
+gai_DecisionTreeBranch_t * gai_DecisionTree_FindBranch(gai_DecisionTree_t* tree, const char* branchName)
+{
+    sdk_size_t i;
+    gai_DecisionTreeBranch_t * branch;
+    for(i = 0; i<tree->branches.size; i++){
+        sdk_vector_get(&tree->branches, i, (void **) &branch);
+        if(strcmp(branchName, branch->node.name)==0){
+            return branch;
+        }
+    }
 }
 
 void gai_DecisionTree_SetBranch(gai_DecisionTree_t* tree, gai_DecisionTreeBranch_t* branch)
