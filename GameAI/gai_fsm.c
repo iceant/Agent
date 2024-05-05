@@ -106,6 +106,8 @@ void gai_FSM_Machine_Update(gai_FSM_Machine_t* machine, void* userdata)
                 machine->currentState = gai_FSM_Machine_FindState(machine, toStateName);
                 gai_Action_Initialize(machine->currentState->action, userdata);
             }
+        }else if(status==kGAI_ActionStatus_UNINITIALIZED){
+            gai_Action_Initialize(machine->currentState->action, userdata);
         }
     }
 }

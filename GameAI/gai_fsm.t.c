@@ -29,15 +29,16 @@ typedef struct Evaluator_Context{
 static int Evaluator__Function(gai_Evaluator_t* evaluator, void* userdata){
     Evaluator_Context* context = evaluator->node.userdata;
     int value  = context->min + (rand() % context->max);
-    return 1;
+    return value-1;
 }
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
 int main(int argc, char** argv)
 {
+    srand(time(0));
     sdk_memory_init();
-    Evaluator_Context context={.min=0, .max=1};
+    Evaluator_Context context={.min=1, .max=2};
     gai_FSM_Machine_t machine;
     gai_FSM_Machine_Init(&machine, "Test", 0);
     
@@ -70,7 +71,7 @@ int main(int argc, char** argv)
             break;
         }
     }
-    
+    gai_FSM_Machine_DeInit(&machine);
     sdk_memory_destroy();
     return 0;
 }
