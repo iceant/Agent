@@ -3,6 +3,8 @@
 #include <sdk_memory.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 typedef struct Evaluator_Context{
@@ -107,8 +109,21 @@ int main(int argc, char** argv) {
     gai_BehaviorTree_SetRoot(&behaviorTree, &root);
     
     /* ---------------------------------------------------------------------------------------------------- */
+    gai_BehaviorTreeNode_t * previousActionNode=0;
     while(1){
         gai_BehaviorTree_Update(&behaviorTree, 0);
+        if(behaviorTree.currentNode){
+            if(strcmp(behaviorTree.currentNode->node.name, "dieActionNode")==0){
+                previousActionNode = behaviorTree.currentNode;
+            }
+        }
+        
+        if(previousActionNode){
+            if(previousActionNode->action->status==kGAI_ActionStatus_UNINITIALIZED){
+                break;
+            }
+        }
+        
         for(int i=0; i<0x1fffffff; i++);
     }
     
