@@ -27,6 +27,7 @@ sdk_err_t sdk_vector_init(sdk_vector_t* vector, sdk_size_t capacity)
 void sdk_vector_destroy(sdk_vector_t * vector){
     SDK_FREE(vector->items);
     vector->size = 0;
+    vector->capacity = 0;
 }
 
 sdk_err_t sdk_vector_append(sdk_vector_t* vector, void* item)

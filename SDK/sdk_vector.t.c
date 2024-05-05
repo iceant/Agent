@@ -24,6 +24,8 @@ int main(int argc, char** argv)
         printf("Vector.Size=%d, Vector.Capacity=%d\r\n", v1.size, v1.capacity);
     }
     
+    sdk_vector_destroy(&v1);
+    
     sdk_memory_destroy();
     
     return 0;
