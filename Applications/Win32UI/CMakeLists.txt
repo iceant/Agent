@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Agent_Win32UI C)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../SDK ${CMAKE_CURRENT_BINARY_DIR}/SDK)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../GameAI ${CMAKE_CURRENT_BINARY_DIR}/GameAI)
 
 file(GLOB SOURCE *.c)
 
