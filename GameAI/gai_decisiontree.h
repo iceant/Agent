@@ -43,6 +43,8 @@ typedef struct gai_DecisionTree_s{
 int gai_DecisionTreeBranch_Init(gai_DecisionTreeBranch_t* branch, const char* name
                                 , gai_Evaluator_t *evaluator, void* userdata);
 
+void gai_DecisionTreeBranch_DeInit(gai_DecisionTreeBranch_t* branch);
+
 void gai_DecisionTreeBranch_AddChild(gai_DecisionTreeBranch_t* branch, gai_Node_t * child /* Branch or Action */);
 
 void gai_DecisionTreeBranch_SetEvaluator(gai_DecisionTreeBranch_t* branch, gai_Evaluator_t * evaluator);

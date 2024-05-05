@@ -9,6 +9,10 @@ int gai_DecisionTreeBranch_Init(gai_DecisionTreeBranch_t* branch, const char* na
     return 0;
 }
 
+void gai_DecisionTreeBranch_DeInit(gai_DecisionTreeBranch_t* branch){
+    sdk_vector_destroy(&branch->children);
+}
+
 void gai_DecisionTreeBranch_AddChild(gai_DecisionTreeBranch_t* branch, gai_Node_t* child){
     sdk_vector_resize_append(&branch->children, child);
 }
@@ -62,11 +66,10 @@ void gai_DecisionTree_Update(gai_DecisionTree_t* tree, void* userdata)
     
     if(!tree->currentAction){
         tree->currentAction = gai_DecisionTreeBranch_Evaluate(tree->branch, userdata);
+        tree->currentAction->Initialize(tree->currentAction, userdata);
     }
     
     if(tree->currentAction){
-        tree->currentAction->Initialize(tree->currentAction, userdata);
-        
         gai_ActionStatus status = tree->currentAction->Update(tree->currentAction, userdata);
         if(status==kGAI_ActionStatus_TERMINATED){
             tree->currentAction->Cleanup(tree->currentAction, userdata);
