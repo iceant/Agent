@@ -35,6 +35,8 @@ sdk_err_t sdk_ring_try_get(sdk_ring_t* ring, void* result);
 
 sdk_err_t sdk_ring_read(sdk_ring_t* ring, int idx, void* result);
 
+sdk_err_t sdk_ring_peek(sdk_ring_t* ring, int idx, void** result);
+
 sdk_size_t sdk_ring_size(sdk_ring_t* ring);
 
 sdk_size_t sdk_ring_capacity(sdk_ring_t* ring);

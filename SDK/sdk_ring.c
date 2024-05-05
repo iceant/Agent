@@ -13,12 +13,12 @@ sdk_err_t sdk_ring_put(sdk_ring_t* ring, void* object){
     if(sdk_ring_is_full(ring)){
         return SDK_EFULL;
     }
-    sdk_size_t next_write_idx = ring->write_idx;
+    sdk_size_t next_write_idx = ring->write_idx + 1;
     if(next_write_idx>=ring->capacity){
         next_write_idx = 0;
     }
     memcpy(ring->pool+ring->write_idx*ring->object_size, object, ring->object_size);
-    ring->read_idx = next_write_idx;
+    ring->write_idx = next_write_idx;
     return SDK_EOK;
 }
 
@@ -113,4 +113,22 @@ sdk_err_t sdk_ring_read(sdk_ring_t* ring, int idx, void* result)
     return SDK_EOK;
 }
 
+sdk_err_t sdk_ring_peek(sdk_ring_t* ring, int idx, void** result)
+{
+    if(sdk_ring_is_empty(ring)==SDK_TRUE){
+        return SDK_EEMPTY;
+    }
+    
+    sdk_size_t read_idx = (ring->read_idx + idx) % ring->capacity;
+    if(read_idx==ring->write_idx){
+        return SDK_EOVERFLOW;
+    }
+    
+    if(result){
+//        memcpy(result, ring->pool+read_idx*ring->object_size, ring->object_size);
+        *result = ring->pool+read_idx*ring->object_size;
+    }
+    
+    return SDK_EOK;
+}
 
