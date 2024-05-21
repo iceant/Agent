@@ -54,18 +54,18 @@ os_err_t os_thread_init(os_thread_t* thread, const char* name
 
 os_err_t os_thread_startup(os_thread_t * thread){
     os_scheduler_push_back(thread);
-    return os_scheduler_schedule();
+    return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
 }
 
 os_err_t os_thread_suspend(os_thread_t * thread){
     os_scheduler_suspend(thread);
-    return os_scheduler_schedule();
+    return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
 }
 
 os_err_t os_thread_resume(os_thread_t * thread)
 {
     os_scheduler_resume(thread);
-    return os_scheduler_schedule();
+    return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
 }
 
 os_err_t os_thread_join(os_thread_t * thread){
@@ -74,7 +74,7 @@ os_err_t os_thread_join(os_thread_t * thread){
 
 os_err_t os_thread_yield(void){
     os_scheduler_yield(os_thread_self());
-    return os_scheduler_schedule();
+    return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
 }
 
 os_thread_t* os_thread_self(void){

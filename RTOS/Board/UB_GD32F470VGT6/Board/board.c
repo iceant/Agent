@@ -11,7 +11,7 @@ void Board_Init(void){
 
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0x0000);
     SCB->CCR|=SCB_CCR_STKALIGN_Msk;
-//    systick_clksource_set(SYSTICK_CLKSOURCE_HCLK_DIV8);
+    systick_clksource_set(SYSTICK_CLKSOURCE_HCLK_DIV8);
 
 //    os_kernel_init();
 

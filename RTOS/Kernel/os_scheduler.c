@@ -50,7 +50,7 @@ C__STATIC_FORCEINLINE void os_scheduler__pending_list_push_back(os_thread_t * th
     OS_LIST_INSERT_BEFORE(&os_scheduler__pending_list, &thread->ready_node);
 }
 
-C__STATIC_FORCEINLINE void os_scheduler__ready_list_push_back(os_thread_t * thread){
+C__STATIC_FORCEINLINE void os_scheduler__ready_list_push_back(os_thread_t * thread, os_bool_t push_back){
     if(thread==0)return;
     os_priority_t priority = thread->curr_priority;
     os_list_t * head = &os_scheduler__ready_list[priority];
@@ -64,9 +64,14 @@ C__STATIC_FORCEINLINE void os_scheduler__ready_list_push_back(os_thread_t * thre
     }
     OS_LIST_REMOVE(&thread->ready_node);
     thread->state = OS_THREAD_STATE_READY;
-    OS_LIST_INSERT_BEFORE(head, &thread->ready_node);
+    if(push_back==OS_TRUE){
+        OS_LIST_INSERT_BEFORE(head, &thread->ready_node);
+    }else{
+        OS_LIST_INSERT_AFTER(head, &thread->ready_node);
+    }
     os_priority_mark(priority);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -99,7 +104,7 @@ static void os_scheduler__timer_timeout(os_timer_t * timer, void* userdata){
     if(os_interrupt_nest()>0U){
         os_scheduler__pending_list_push_back(thread);
     }else{
-        os_scheduler__ready_list_push_back(thread);
+        os_scheduler__ready_list_push_back(thread, OS_TRUE);
     }
 }
 
@@ -122,6 +127,7 @@ void os_scheduler_on_systick(void){
     OS_SCHEDULER_LOCK();
     os_scheduler__current_tick++;
     curr_thread = os_scheduler__current_thread;
+
     if(curr_thread!=0){
         if(curr_thread->state==OS_THREAD_STATE_RUNNING){
             curr_thread->remain_ticks--;
@@ -134,15 +140,13 @@ void os_scheduler_on_systick(void){
 
     timer_need_schedule = os_timer_tick();
 
-    if(os_scheduler_skipped()>0U){
+    if(os_scheduler_skipped()>0U && os_interrupt_nest()==0U){
         /*需要紧急调度*/
-        if(os_interrupt_nest()>0U){
-            os_scheduler__pending_list_push_back(curr_thread);
-            os_scheduler_mark_skipped();
+        if(curr_thread!=0 && curr_thread->state==OS_THREAD_STATE_RUNNING){
+            curr_thread->state = OS_THREAD_STATE_YIELD;
         }
-
         OS_SCHEDULER_UNLOCK();
-        os_scheduler_schedule();
+        os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_FRONT);
         return;
     }
 
@@ -152,7 +156,7 @@ void os_scheduler_on_systick(void){
             os_scheduler_mark_skipped();
         }else{
             OS_SCHEDULER_UNLOCK();
-            os_scheduler_schedule();
+            os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
             return;
         }
     }
@@ -160,7 +164,7 @@ void os_scheduler_on_systick(void){
     if(timer_need_schedule==OS_TRUE){
         if(os_interrupt_nest()==0U){
             OS_SCHEDULER_UNLOCK();
-            os_scheduler_schedule();
+            os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
             return;
         }else{
             os_scheduler_mark_skipped();
@@ -189,7 +193,7 @@ os_err_t os_scheduler_startup(void){
     return OS_SCHEDULER_EOK;
 }
 
-os_err_t os_scheduler_schedule(void)
+os_err_t os_scheduler_schedule(int policy)
 {
     register os_thread_t * curr_thread;
     register os_thread_t * next_thread;
@@ -221,14 +225,18 @@ os_err_t os_scheduler_schedule(void)
             }else{
                 /*不运行*/
                 printf("[sch] skip %s\n",next_thread->name);
-                os_scheduler_push_front(next_thread);
+                os_scheduler_push_back(next_thread);
                 /* 继续运行 */
                 OS_SCHEDULER_UNLOCK();
                 return OS_SCHEDULER_EINWORK;
             }
         }
         if(curr_thread->state==OS_THREAD_STATE_YIELD){
-            os_scheduler__ready_list_push_back(curr_thread);
+            if(policy==OS_SCHEDULER_POLICY_PUSH_YIELD_BACK){
+                os_scheduler__ready_list_push_back(curr_thread, OS_TRUE);
+            }else{
+                os_scheduler__ready_list_push_back(curr_thread, OS_FALSE);
+            }
             os_scheduler__current_thread = 0;
         }
     }
@@ -242,7 +250,7 @@ os_err_t os_scheduler_schedule(void)
             os_thread_t * thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
             node = OS_LIST_NEXT(node);
             OS_LIST_REMOVE(&thread->ready_node);
-            os_scheduler__ready_list_push_back(thread);
+            os_scheduler__ready_list_push_back(thread, OS_TRUE);
         }
     }
 
@@ -253,7 +261,7 @@ os_err_t os_scheduler_schedule(void)
             os_thread_t * thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
             node = OS_LIST_NEXT(node);
             OS_LIST_REMOVE(&thread->ready_node);
-            os_scheduler__ready_list_push_back(thread);
+            os_scheduler__ready_list_push_back(thread, OS_TRUE);
         }
     }
 
@@ -290,7 +298,7 @@ os_uint_t os_scheduler_skipped(void){
 os_err_t os_scheduler_push_back(os_thread_t * thread)
 {
     OS_SCHEDULER_LOCK();
-    os_scheduler__ready_list_push_back(thread);
+    os_scheduler__ready_list_push_back(thread, OS_TRUE);
     OS_SCHEDULER_UNLOCK();
 
     return OS_SCHEDULER_EOK;
@@ -350,7 +358,7 @@ void os_scheduler_push(os_thread_t * thread)
         os_scheduler__pending_list_push_back(thread);
     }else{
         printf("[sch] ready %s\n", thread->name);
-        os_scheduler__ready_list_push_back(thread);
+        os_scheduler__ready_list_push_back(thread, OS_TRUE);
     }
     OS_SCHEDULER_UNLOCK();
 }

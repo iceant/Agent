@@ -26,6 +26,8 @@
 #define OS_SCHEDULER_STATE_STARTED          (2)
 #define OS_SCHEDULER_STATE_TERMINATED       (-1)
 
+#define OS_SCHEDULER_POLICY_PUSH_YIELD_FRONT (1)
+#define OS_SCHEDULER_POLICY_PUSH_YIELD_BACK  (2)
 ////////////////////////////////////////////////////////////////////////////////
 ////
 os_err_t os_scheduler_init(void);
@@ -36,7 +38,7 @@ void os_scheduler_on_systick(void);
 
 os_err_t os_scheduler_startup(void); /* start the first task */
 
-os_err_t os_scheduler_schedule(void); /* schedule in interrupt */
+os_err_t os_scheduler_schedule(int policy); /* schedule in interrupt */
 
 os_err_t os_scheduler_schedule_in_application(void); /* schedule in application */
 

@@ -94,14 +94,14 @@ os_err_t os_semaphore_take(os_semaphore_t * semaphore, os_tick_t ticks){
             current_thread->state = OS_THREAD_STATE_WAIT;
             os_semaphore__insert(semaphore, current_thread);
             OS_SEMAPHORE_UNLOCK(semaphore);
-            os_scheduler_schedule();
+            os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
         }else{
             /*等待特定时间*/
             current_thread = os_thread_self();
             os_scheduler_timed_wait(current_thread, ticks); /*挂在时间调度器上*/
             OS_SEMAPHORE_UNLOCK(semaphore);
             current_thread->error = OS_THREAD_ERROR_OK;
-            os_scheduler_schedule();
+            os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
             if(current_thread->error == OS_THREAD_ERROR_TIMEOUT){
                 return OS_ETIMEOUT;
             }
@@ -132,5 +132,5 @@ os_err_t os_semaphore_release(os_semaphore_t * semaphore){
         }
     }
     OS_SEMAPHORE_UNLOCK(semaphore);
-    return os_scheduler_schedule();
+    return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);
 }

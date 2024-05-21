@@ -108,17 +108,17 @@ int main(void)
     BSP_USART0_SetRxHandler(BSP_USART0__RxHandler, 0);
 
     os_thread_init(&BSP_USART0__RxThread, "USART0_RxThd", BSP_USART0__RxThreadEntry, 0, BSP_USART0__RxThreadStack, sizeof(BSP_USART0__RxThreadStack), 19,
-                   os_tick_from_millisecond(200));
+                   os_tick_from_millisecond(500));
     os_thread_startup(&BSP_USART0__RxThread);
 
     printf("os_tick_from_millisecond(50)=%d\n", os_tick_from_millisecond(50));
 
     os_thread_init(&BootThread, "Boot", Thread_Entry, 0, BootThread_Stack, sizeof(BootThread_Stack), 20,
-                   os_tick_from_millisecond(200));
+                   os_tick_from_millisecond(1000));
     os_thread_startup(&BootThread);
 
     os_thread_init(&Worker1, "Worker1", Thread_Entry, 0, Worker1_Stack, sizeof(Worker1_Stack), 20,
-                   os_tick_from_millisecond(200));
+                   os_tick_from_millisecond(500));
     os_thread_startup(&Worker1);
 
     os_kernel_startup();
