@@ -354,10 +354,10 @@ void os_scheduler_push(os_thread_t * thread)
     OS_SCHEDULER_LOCK();
     if(os_interrupt_nest()>0U){
         os_scheduler_mark_skipped();
-        printf("[sch] pending %s\n", thread->name);
+//        printf("[sch] pending %s\n", thread->name);
         os_scheduler__pending_list_push_back(thread);
     }else{
-        printf("[sch] ready %s\n", thread->name);
+//        printf("[sch] ready %s\n", thread->name);
         os_scheduler__ready_list_push_back(thread, OS_TRUE);
     }
     OS_SCHEDULER_UNLOCK();

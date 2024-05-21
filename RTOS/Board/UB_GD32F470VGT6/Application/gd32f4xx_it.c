@@ -44,9 +44,11 @@ OF SUCH DAMAGE.
 */
 void NMI_Handler(void)
 {
+    printf("NMI_Handler\n");
     /* if NMI exception occurs, go to infinite loop */
-    while(1) {
-    }
+//    while(1) {
+//    }
+    HardFault_Handler();
 }
 
 /*!
@@ -70,9 +72,13 @@ void NMI_Handler(void)
 */
 void MemManage_Handler(void)
 {
+    os_interrupt_enter();
+    printf("MemManage_Handler\n");
     /* if Memory Manage exception occurs, go to infinite loop */
-    while(1) {
-    }
+//    while(1) {
+//    }
+    HardFault_Handler();
+    os_interrupt_exit();
 }
 
 /*!
@@ -83,9 +89,13 @@ void MemManage_Handler(void)
 */
 void BusFault_Handler(void)
 {
+    os_interrupt_enter();
     /* if Bus Fault exception occurs, go to infinite loop */
-    while(1) {
-    }
+//    while(1) {
+//    }
+    printf("BusFault_Handler\n");
+    HardFault_Handler();
+    os_interrupt_exit();
 }
 
 /*!
@@ -96,9 +106,12 @@ void BusFault_Handler(void)
 */
 void UsageFault_Handler(void)
 {
+    os_interrupt_enter();
     /* if Usage Fault exception occurs, go to infinite loop */
-    while(1) {
-    }
+//    while(1) {
+//    }
+    printf("UsageFault_Handler\n");
+    os_interrupt_exit();
 }
 
 /*!
@@ -122,9 +135,10 @@ void UsageFault_Handler(void)
 */
 void DebugMon_Handler(void)
 {
+    os_interrupt_enter();
+    printf("DebugMon_Handler\n");
     /* if DebugMon exception occurs, go to infinite loop */
-    while(1) {
-    }
+    os_interrupt_exit();
 }
 
 /*!
@@ -151,3 +165,5 @@ void SysTick_Handler(void)
 //    printf(">");
     os_scheduler_on_systick();
 }
+
+

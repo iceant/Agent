@@ -19,8 +19,8 @@ void Board_Init(void){
     //NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 //    nvic_priority_group_set(NVIC_PRIGROUP_PRE4_SUB0);
     SysTick_Config(SystemCoreClock/OS_TICKS_PER_SECOND); /* 10ms = tick */
-    NVIC_SetPriority(SysTick_IRQn, 0xFE);
     NVIC_SetPriority(PendSV_IRQn, 0xFF);
+    NVIC_SetPriority(SysTick_IRQn, 0xFF);
 
     BSP_USART0_Init();
     BSP_USART0_EnableDMATx();

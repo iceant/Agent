@@ -120,16 +120,17 @@ os_err_t os_semaphore_release(os_semaphore_t * semaphore){
         os_list_node_t * node = OS_LIST_NEXT(head);
         OS_LIST_REMOVE(node);
         os_thread_t* thread = OS_CONTAINER_OF(node, os_thread_t, wait_node);
-        os_thread_t* curr_thread = os_scheduler_current_thread();
-        if(os_priority_cmp(thread->curr_priority, curr_thread->curr_priority)==OS_PRIORITY_CMP_HIGH)
-        {
-//            printf("[sem] %s high > %s\n", thread->name, curr_thread->name);
-            /*优先级比现在运行的优先级高，强制切换*/
-            os_scheduler_yield(curr_thread);
-            os_scheduler_push_front(thread); /*加到队列前面，优先执行*/
-        }else{
-            os_scheduler_push(thread);
-        }
+//        os_thread_t* curr_thread = os_scheduler_current_thread();
+//        if(os_priority_cmp(thread->curr_priority, curr_thread->curr_priority)==OS_PRIORITY_CMP_HIGH)
+//        {
+////            printf("[sem] %s high > %s\n", thread->name, curr_thread->name);
+//            /*优先级比现在运行的优先级高，强制切换*/
+//            os_scheduler_yield(curr_thread);
+//            os_scheduler_push_front(thread); /*加到队列前面，优先执行*/
+//        }else{
+//            os_scheduler_push(thread);
+//        }
+        os_scheduler_push(thread);
     }
     OS_SEMAPHORE_UNLOCK(semaphore);
     return os_scheduler_schedule(OS_SCHEDULER_POLICY_PUSH_YIELD_BACK);

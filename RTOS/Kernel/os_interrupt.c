@@ -20,11 +20,11 @@ void os_interrupt_enter(void)
 }
 
 void os_interrupt_exit(void){
-    os_uint_t result = cpu_atomic_sub_return((cpu_atomic_t*)&os_interrupt__nest, 1);
-    if(result > 0U){
-        /* 有嵌套的中断还在运行 */
-        return;
-    }
+    cpu_atomic_sub_return((cpu_atomic_t*)&os_interrupt__nest, 1);
+//    if(result > 0U){
+//        /* 有嵌套的中断还在运行 */
+//        return;
+//    }
 //    if(result==0U){
         /* 检查是否有需要调度的 */
 //        if(os_scheduler_skipped()>0){

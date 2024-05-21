@@ -56,7 +56,9 @@ __PendSV_SwitchTo
 
 __PendSV_Exit
         MSR PRIMASK, R1
+        DMB
         ISB
         BX LR
+
         ALIGN 4
 }
