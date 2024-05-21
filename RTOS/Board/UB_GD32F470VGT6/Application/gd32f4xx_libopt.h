@@ -35,6 +35,10 @@ OF SUCH DAMAGE.
 #ifndef GD32F4XX_LIBOPT_H
 #define GD32F4XX_LIBOPT_H
 
+#ifndef GD32F470
+#define GD32F470
+#endif
+
 #if defined (GD32F450) || defined (GD32F405) || defined (GD32F407) || defined (GD32F470) || defined (GD32F425) || defined (GD32F427)
 #include "gd32f4xx_rcu.h"
 #include "gd32f4xx_adc.h"

@@ -11,6 +11,11 @@
 #include <cpu_types.h>
 #endif /*INCLUDED_CPU_TYPES_H*/
 
+#ifndef INCLUDED_CPU_REGISTERS_H
+#include <cpu_registers.h>
+#endif /*INCLUDED_CPU_REGISTERS_H*/
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -400,6 +405,21 @@ C__STATIC_FORCEINLINE int cpu_in_privilege(void){
     else return 0;
 }
 
+
+C__STATIC_FORCEINLINE void cpu_reboot(void)
+{
+    cpu_DSB();                                                          /* Ensure all outstanding memory accesses included
+                                                                       buffered write are completed before reset */
+    CPU_REG(SCB_AIRCR)  = (uint32_t)((0x5FAUL << SCB_AIRCR_VECTKEY_Pos)    |
+                                     (CPU_REG(SCB_AIRCR) & SCB_AIRCR_PRIGROUP_Msk) |
+                                     SCB_AIRCR_SYSRESETREQ_Msk    );         /* Keep priority group unchanged */
+    cpu_DSB();                                                          /* Ensure completion of memory access */
+
+    for(;;)                                                           /* wait until reset */
+    {
+        cpu_NOP();
+    }
+}
 
 
 #endif /*INCLUDED_CPU_FUNCTIONS_H*/

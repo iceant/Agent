@@ -50,8 +50,9 @@
 #include <os_scheduler.h>
 #endif /*INCLUDED_OS_SCHEDULER_H*/
 
-
-
+#ifndef INCLUDED_OS_SEMAPHORE_H
+#include <os_semaphore.h>
+#endif /*INCLUDED_OS_SEMAPHORE_H*/
 
 
 

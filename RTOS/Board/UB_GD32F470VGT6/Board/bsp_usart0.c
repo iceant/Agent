@@ -1,5 +1,5 @@
 #include <bsp_usart0.h>
-
+#include <os_kernel.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -112,6 +112,7 @@ void BSP_USART0_DMATx(uint8_t* txBuffer, uint32_t size)
 
 void USART0_IRQHandler(void)
 {
+    os_interrupt_enter();
     if((RESET != usart_interrupt_flag_get(USARTx, USART_INT_FLAG_RBNE)) &&
        (RESET != usart_flag_get(USARTx, USART_FLAG_RBNE)))
     {
@@ -129,6 +130,7 @@ void USART0_IRQHandler(void)
         usart_data_receive(USARTx);
     }
 #endif
+    os_interrupt_exit();
 }
 
 

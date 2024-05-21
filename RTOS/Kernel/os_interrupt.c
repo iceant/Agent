@@ -25,10 +25,12 @@ void os_interrupt_exit(void){
         /* 有嵌套的中断还在运行 */
         return;
     }
-    if(result==0U){
+//    if(result==0U){
         /* 检查是否有需要调度的 */
-        os_scheduler_check_pending_schedule_task();
-    }
+//        if(os_scheduler_skipped()>0){
+//            os_scheduler_schedule();
+//        }
+//    }
 }
 
 os_uint_t os_interrupt_nest(void){

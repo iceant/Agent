@@ -43,11 +43,6 @@ OF SUCH DAMAGE.
 #include <board.h>
 #endif /*INCLUDED_BOARD_H*/
 
-
-
-/* led spark function */
-void led_spark(void);
-
 #endif /* __MAIN_H */
 
 

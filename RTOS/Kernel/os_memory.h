@@ -37,6 +37,13 @@ void os_memory_free(void* memory, const char* file, os_size_t line);
 #define OS_NEW(P) (P) = OS_ALLOC(sizeof(*(P)))
 #define OS_NEW0(P) (P) = OS_CALLOC(1, sizeof(*(P)))
 
+////////////////////////////////////////////////////////////////////////////////
+////
+#define malloc      OS_ALLOC
+#define calloc      OS_CALLOC
+#define realloc     OS_REALLOC
+#define free        OS_FREE
+
 
 
 

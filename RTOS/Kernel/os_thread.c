@@ -4,6 +4,7 @@
 #include <os_macros.h>
 #include <os_list.h>
 #include <cpu_stack.h>
+#include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 ////
@@ -25,6 +26,7 @@ os_err_t os_thread_init(os_thread_t* thread, const char* name
     if(name){
         os_size_t name_size = strlen(name);
         name_size = OS_MIN(name_size, OS_NAME_SIZE-1);
+        printf("name_size:%d\r\n", name_size);
         memcpy(thread->name, name, name_size);
         thread->name[name_size]='\0';
     }

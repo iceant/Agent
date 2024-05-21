@@ -102,11 +102,15 @@ os_err_t os_timer_remove(os_timer_t * timer)
 os_bool_t os_timer_tick(void){
     OS_TIMER_LOCK();
 
-    ++os_timer__current_tick;
-    os_bool_t nee_schedule = OS_FALSE;
-    os_tick_t current_tick = os_timer__current_tick;
+    register os_bool_t nee_schedule = OS_FALSE;
+    register os_tick_t current_tick;
+    register os_list_t * head;
+    register os_list_node_t * node;
+    register os_timer_t * timer;
 
-    os_list_t * head;
+    os_timer__current_tick++;
+    current_tick = os_timer__current_tick;
+
     if(current_tick <= TVR_MAX){
         head = &os_timer__tvroot;
     }else if(current_tick <= TV0_MAX){
@@ -124,9 +128,8 @@ os_bool_t os_timer_tick(void){
         return nee_schedule;
     }
 
-    os_list_node_t * node;
     for(node = OS_LIST_NEXT(head); node!=head; ){
-        os_timer_t * timer = OS_CONTAINER_OF(node, os_timer_t, wait_node);
+        timer = OS_CONTAINER_OF(node, os_timer_t, wait_node);
         node = OS_LIST_NEXT(node);
         if(timer->expire_tick >= current_tick){
             nee_schedule = OS_TRUE;

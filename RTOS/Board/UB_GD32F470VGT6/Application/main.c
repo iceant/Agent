@@ -34,9 +34,61 @@ OF SUCH DAMAGE.
 
 #include "main.h"
 #include <board.h>
-#include "systick.h"
 #include <stdio.h>
+#include <os_kernel.h>
+#include <string.h>
 
+////////////////////////////////////////////////////////////////////////////////
+////
+static uint8_t BootThread_Stack[2048];
+static os_thread_t BootThread;
+
+
+static uint8_t Worker1_Stack[2048];
+static os_thread_t Worker1;
+
+static void Thread_Entry(void* p){
+    os_size_t nCount = 0;
+    while(1){
+        printf("[Task-%s]: %d\n", os_thread_self()->name, nCount++);
+        for(int i=0; i<0x3fffff; i++);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////
+static uint8_t BSP_USART0__RxThreadStack[2048];
+static os_thread_t BSP_USART0__RxThread;
+static os_semaphore_t BSP_USART0__RxSem={0};
+static os_size_t write_idx = 0;
+static os_size_t read_idx = 0;
+static uint8_t BSP_USART0__RxBuffer[256]={0};
+
+
+static void BSP_USART0__RxHandler(uint16_t data, void* ud){
+    BSP_USART0__RxBuffer[write_idx++] = data & 0xFF;
+    os_semaphore_release(&BSP_USART0__RxSem);
+}
+
+static void BSP_USART0__RxThreadEntry(void* p)
+{
+    while(1){
+        os_semaphore_take(&BSP_USART0__RxSem, OS_WAIT_INFINITY);
+        if(BSP_USART0__RxBuffer[write_idx-1]=='\n'){
+            printf("[USART0] Rx: %s", BSP_USART0__RxBuffer);
+            write_idx = 0;
+            memset(BSP_USART0__RxBuffer, 0, sizeof(BSP_USART0__RxBuffer));
+        }
+        if(write_idx==sizeof(BSP_USART0__RxBuffer)){
+            write_idx = 0;
+            memset(BSP_USART0__RxBuffer, 0, sizeof(BSP_USART0__RxBuffer));
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+////
 
 
 /*!
@@ -47,8 +99,35 @@ OF SUCH DAMAGE.
 */
 int main(void)
 {
-    systick_config();
+    Board_Init();
+
+    os_kernel_init();
+
+    printf("BSP_USART0__RxThreadEntry startup\n");
+    os_semaphore_init(&BSP_USART0__RxSem, "USART0_RxSem", 0, OS_SEMAPHORE_FLAG_FIFO);
+    BSP_USART0_SetRxHandler(BSP_USART0__RxHandler, 0);
+
+    os_thread_init(&BSP_USART0__RxThread, "USART0_RxThd", BSP_USART0__RxThreadEntry, 0, BSP_USART0__RxThreadStack, sizeof(BSP_USART0__RxThreadStack), 19,
+                   os_tick_from_millisecond(200));
+    os_thread_startup(&BSP_USART0__RxThread);
+
+    printf("os_tick_from_millisecond(50)=%d\n", os_tick_from_millisecond(50));
+
+    os_thread_init(&BootThread, "Boot", Thread_Entry, 0, BootThread_Stack, sizeof(BootThread_Stack), 20,
+                   os_tick_from_millisecond(200));
+    os_thread_startup(&BootThread);
+
+    os_thread_init(&Worker1, "Worker1", Thread_Entry, 0, Worker1_Stack, sizeof(Worker1_Stack), 20,
+                   os_tick_from_millisecond(200));
+    os_thread_startup(&Worker1);
+
+    os_kernel_startup();
+
+
+    size_t nCount = 0;
 
     while(1) {
+        printf("count=%d\n", nCount++);
+        for(int i=0; i<0x3FffFF; i++){}
     }
 }

@@ -118,7 +118,7 @@ typedef os_uint_t os_size_t;
 #endif
 
 
-
+#define OS_WAIT_INFINITY (-1U)
 
 
 #endif /*INCLUDED_OS_TYPES_H*/

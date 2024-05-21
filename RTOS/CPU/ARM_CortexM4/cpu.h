@@ -54,10 +54,6 @@
 #include <cpu_lock.h>
 #endif /*INCLUDED_CPU_LOCK_H*/
 
-#ifndef INCLUDED_CPU_LOCK_H
-#include <cpu_lock.h>
-#endif /*INCLUDED_CPU_LOCK_H*/
-
 
 
 

@@ -5,6 +5,7 @@
 #include <cpu.h>
 #include <cpu_stack.h>
 #include <os_interrupt.h>
+#include <stdio.h>
 ////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -16,6 +17,7 @@ static os_uint_t os_scheduler__schedule_nest={0};
 static cpu_lock_t os_scheduler__lock={0};
 static os_thread_t * os_scheduler__current_thread=0;
 static os_uint_t os_scheduler__current_tick=0;
+static os_uint_t os_scheduler__skipped = 0;
 
 #define OS_SCHEDULER_LOCK() cpu_lock_lock(&os_scheduler__lock)
 #define OS_SCHEDULER_UNLOCK() cpu_lock_unlock(&os_scheduler__lock)
@@ -27,7 +29,6 @@ C__STATIC_FORCEINLINE os_thread_t * os_scheduler__pop_highest(void){
     os_list_t * head = &os_scheduler__ready_list[highest_priority];
     if(OS_LIST_IS_EMPTY(head)){
         os_priority_unmark(highest_priority);
-        OS_SCHEDULER_UNLOCK();
         return 0;
     }
     os_list_node_t *node = OS_LIST_NEXT(head);
@@ -41,6 +42,10 @@ C__STATIC_FORCEINLINE os_thread_t * os_scheduler__pop_highest(void){
 
 C__STATIC_FORCEINLINE void os_scheduler__pending_list_push_back(os_thread_t * thread){
     if(thread==0)return;
+    if(thread->sp < thread->stack_addr || thread->sp>=(thread->stack_addr + thread->stack_size)){
+        printf("[sch] invalid thread!\n");
+        return;
+    }
     OS_LIST_REMOVE(&thread->ready_node);
     OS_LIST_INSERT_BEFORE(&os_scheduler__pending_list, &thread->ready_node);
 }
@@ -99,8 +104,15 @@ static void os_scheduler__timer_timeout(os_timer_t * timer, void* userdata){
 }
 
 void os_scheduler_timed_wait(os_thread_t * thread, os_tick_t ticks){
+    thread->state = OS_THREAD_STATE_TIMEWAIT;
     os_timer_add(&thread->timer_node, os_scheduler__timer_timeout, thread, ticks, OS_TIMER_FLAG_ONCE);
 }
+
+C__STATIC_FORCEINLINE void os_scheduler_mark_skipped(void)
+{
+    os_scheduler__skipped++;
+}
+
 
 void os_scheduler_on_systick(void){
     register os_thread_t * curr_thread;
@@ -115,7 +127,6 @@ void os_scheduler_on_systick(void){
             curr_thread->remain_ticks--;
             if(curr_thread->remain_ticks == 0){
                 curr_thread->state = OS_THREAD_STATE_YIELD;
-                os_scheduler__current_thread = 0;
                 curr_thread_need_schedule = OS_TRUE;
             }
         }
@@ -123,15 +134,36 @@ void os_scheduler_on_systick(void){
 
     timer_need_schedule = os_timer_tick();
 
-    if(curr_thread_need_schedule==OS_TRUE || (timer_need_schedule==OS_TRUE)){
+    if(os_scheduler_skipped()>0U){
+        /*需要紧急调度*/
         if(os_interrupt_nest()>0U){
-            // push to pend list
-            // wait for schedule
             os_scheduler__pending_list_push_back(curr_thread);
+            os_scheduler_mark_skipped();
+        }
+
+        OS_SCHEDULER_UNLOCK();
+        os_scheduler_schedule();
+        return;
+    }
+
+    if(curr_thread_need_schedule==OS_TRUE){
+        if(os_interrupt_nest()>0U){
+            os_scheduler__pending_list_push_back(curr_thread);
+            os_scheduler_mark_skipped();
         }else{
-            // push to ready list
-            // schedule now
+            OS_SCHEDULER_UNLOCK();
             os_scheduler_schedule();
+            return;
+        }
+    }
+
+    if(timer_need_schedule==OS_TRUE){
+        if(os_interrupt_nest()==0U){
+            OS_SCHEDULER_UNLOCK();
+            os_scheduler_schedule();
+            return;
+        }else{
+            os_scheduler_mark_skipped();
         }
     }
 
@@ -145,16 +177,11 @@ os_uint_t os_scheduler_nest(){
 os_err_t os_scheduler_startup(void){
 
     OS_SCHEDULER_LOCK();
-
     os_thread_t * thread = os_scheduler__pop_highest();
-    os_scheduler__ready_list_push_back(os_scheduler__current_thread);
-
     thread->state = OS_THREAD_STATE_RUNNING;
-    if(thread->remain_ticks ==0 ){
-        thread->remain_ticks = thread->init_ticks;
-    }
+    thread->remain_ticks = thread->init_ticks;
     os_scheduler__current_thread = thread;
-
+    os_scheduler__state = OS_SCHEDULER_STATE_STARTED;
     OS_SCHEDULER_UNLOCK();
 
     cpu_stack_switch(0, &thread->sp);
@@ -166,24 +193,61 @@ os_err_t os_scheduler_schedule(void)
 {
     register os_thread_t * curr_thread;
     register os_thread_t * next_thread;
+    register os_list_node_t * node;
+    register os_list_t * head;
 
-    if(os_interrupt_nest()>0U){
+    if(os_scheduler__state!=OS_SCHEDULER_STATE_STARTED){
+        return OS_SCHEDULER_ERROR;
+    }
+
+    if(os_interrupt_nest()!=0U){
+        os_scheduler_mark_skipped();
         return OS_SCHEDULER_ERROR;
     }
 
     OS_SCHEDULER_LOCK();
 
     next_thread = os_scheduler__pop_highest();
-
+//    if(next_thread) {
+//        printf("next_thraed: %s\n", next_thread->name);
+//    }
     curr_thread = os_scheduler__current_thread;
     if(curr_thread!=0){
+        if(curr_thread->state==OS_THREAD_STATE_RUNNING && curr_thread->remain_ticks!=0){
+            int cmp = os_priority_cmp(next_thread->curr_priority, curr_thread->curr_priority);
+            if(cmp==OS_PRIORITY_CMP_HIGH){
+                printf("[sch] %s take over %s\n", next_thread->name, curr_thread->name);
+                os_scheduler_push_front(curr_thread); /*放到最前面，同优先级情况下第一个调用*/
+            }else{
+                /*不运行*/
+                printf("[sch] skip %s\n",next_thread->name);
+                os_scheduler_push_front(next_thread);
+                /* 继续运行 */
+                OS_SCHEDULER_UNLOCK();
+                return OS_SCHEDULER_EINWORK;
+            }
+        }
         if(curr_thread->state==OS_THREAD_STATE_YIELD){
             os_scheduler__ready_list_push_back(curr_thread);
+            os_scheduler__current_thread = 0;
         }
     }
 
-    os_list_node_t * node;
-    os_list_t * head = &os_scheduler__pending_list;
+
+
+    /*将 pending(没来得及调度) 的线程就绪*/
+    head = &os_scheduler__pending_list;
+    if(!OS_LIST_IS_EMPTY(head)){
+        for(node = OS_LIST_NEXT(head); node!=head;){
+            os_thread_t * thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
+            node = OS_LIST_NEXT(node);
+            OS_LIST_REMOVE(&thread->ready_node);
+            os_scheduler__ready_list_push_back(thread);
+        }
+    }
+
+    /*将 yield 的线程就绪*/
+    head = &os_scheduler__yield_list;
     if(!OS_LIST_IS_EMPTY(head)){
         for(node = OS_LIST_NEXT(head); node!=head;){
             os_thread_t * thread = OS_CONTAINER_OF(node, os_thread_t, ready_node);
@@ -198,17 +262,30 @@ os_err_t os_scheduler_schedule(void)
     }
 
     if(next_thread==0){
+        printf("no next_thread!!!\n");
         OS_SCHEDULER_UNLOCK();
         return OS_SCHEDULER_ERROR;
     }
 
+    next_thread->state = OS_THREAD_STATE_RUNNING;
+    if(next_thread->remain_ticks==0){
+        next_thread->remain_ticks = next_thread->init_ticks;
+    }
+    os_scheduler__current_thread = next_thread;
+    os_scheduler__skipped = 0;
+
     OS_SCHEDULER_UNLOCK();
 
+
+//    printf("switch from %s to %s\n", (curr_thread?curr_thread->name:"N/A"), next_thread->name);
     cpu_stack_switch((curr_thread==0)?0:&curr_thread->sp, &next_thread->sp);
 
     return OS_SCHEDULER_EOK;
 }
 
+os_uint_t os_scheduler_skipped(void){
+    return os_scheduler__skipped;
+}
 
 os_err_t os_scheduler_push_back(os_thread_t * thread)
 {
@@ -225,6 +302,7 @@ os_err_t os_scheduler_push_front(os_thread_t * thread){
     os_list_t * head = &os_scheduler__ready_list[priority];
     OS_LIST_REMOVE(&thread->ready_node);
     OS_LIST_INSERT_AFTER(head, &thread->ready_node);
+    thread->state = OS_THREAD_STATE_READY;
     os_priority_mark(priority);
     OS_SCHEDULER_UNLOCK();
 
@@ -259,4 +337,20 @@ os_err_t os_scheduler_yield(os_thread_t * thread)
 os_thread_t* os_scheduler_current_thread(void)
 {
     return os_scheduler__current_thread;
+}
+
+void os_scheduler_push(os_thread_t * thread)
+{
+    if(thread==0) return;
+
+    OS_SCHEDULER_LOCK();
+    if(os_interrupt_nest()>0U){
+        os_scheduler_mark_skipped();
+        printf("[sch] pending %s\n", thread->name);
+        os_scheduler__pending_list_push_back(thread);
+    }else{
+        printf("[sch] ready %s\n", thread->name);
+        os_scheduler__ready_list_push_back(thread);
+    }
+    OS_SCHEDULER_UNLOCK();
 }

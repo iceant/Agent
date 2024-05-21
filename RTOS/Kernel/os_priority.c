@@ -1,5 +1,6 @@
 #include <os_priority.h>
 #include <cpu.h>
+#include <stdio.h>
 ////////////////////////////////////////////////////////////////////////////////
 //// CONSTANTS
 #define OS_UINTPTR_BITS (8*sizeof(os_uint_t))

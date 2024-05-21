@@ -19,9 +19,11 @@
 ////
 #define OS_SCHEDULER_EOK        OS_EOK
 #define OS_SCHEDULER_ERROR      OS_ERROR
+#define OS_SCHEDULER_EINWORK    (0x1001)
 
 #define OS_SCHEDULER_STATE_UNINITIALIZED    (0)
 #define OS_SCHEDULER_STATE_INITIALIZED      (1)
+#define OS_SCHEDULER_STATE_STARTED          (2)
 #define OS_SCHEDULER_STATE_TERMINATED       (-1)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,4 +53,9 @@ os_err_t os_scheduler_yield(os_thread_t * thread);
 void os_scheduler_timed_wait(os_thread_t * thread, os_tick_t ticks);
 
 os_thread_t* os_scheduler_current_thread(void);
+
+void os_scheduler_push(os_thread_t * thread);
+
+os_uint_t os_scheduler_skipped(void);
+
 #endif /*INCLUDED_OS_SCHEDULER_H*/
