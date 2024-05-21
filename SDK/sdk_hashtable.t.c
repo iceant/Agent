@@ -39,7 +39,7 @@ static void any_print(sdk_any_t* any){
 static void hashtable_any_print(sdk_hashtable_t* ht, sdk_hashtable_node_t* n, void* arg){
     printf("[");
     any_print((sdk_any_t *)n->key);
-    printf(":%d]", n->hash);
+    printf(":%"SDK_PRIu"]", n->hash);
     printf("=");
     any_print((sdk_any_t *)n->val);
     printf("\r\n");
